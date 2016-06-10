@@ -278,16 +278,14 @@ func createExtractedConfig(event *events.Event, machine *client.Machine) (string
 	tarfileWriter := tar.NewWriter(fileWriter)
 	defer tarfileWriter.Close()
 
-	if err := addDirToArchive(baseDir, tarfileWriter); err != nil {
+	if err := addDirToArchive(baseDir, machine.Name, tarfileWriter); err != nil {
 		return "", err
 	}
 
 	return destFile, nil
 }
 
-func addDirToArchive(source string, tarfileWriter *tar.Writer) error {
-	baseDir := filepath.Base(source)
-
+func addDirToArchive(source, machineName string, tarfileWriter *tar.Writer) error {
 	return filepath.Walk(source,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -303,7 +301,7 @@ func addDirToArchive(source string, tarfileWriter *tar.Writer) error {
 				return err
 			}
 
-			header.Name = filepath.Join(baseDir, strings.TrimPrefix(path, source))
+			header.Name = filepath.Join(machineName, strings.TrimPrefix(path, source))
 
 			if err := tarfileWriter.WriteHeader(header); err != nil {
 				return err
